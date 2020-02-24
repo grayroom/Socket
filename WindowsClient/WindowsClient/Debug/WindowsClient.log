@@ -1,0 +1,4 @@
+﻿  client.c
+d:\code\socket\windowsclient\windowsclient\client.c(30): warning C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  c:\program files (x86)\windows kits\10\include\10.0.17763.0\um\winsock2.h(1831): note: 'inet_addr' 선언을 참조하십시오.
+  WindowsClient.vcxproj -> D:\Code\Socket\WindowsClient\Debug\WindowsClient.exe
