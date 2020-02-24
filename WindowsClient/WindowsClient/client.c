@@ -10,7 +10,9 @@ int main(int argc, char* argv[]) {
 	SOCKADDR_IN servAddr;
 
 	char message[30];
-	int strLen;
+	int strLen = 0;
+	int idx = 0, readLen = 0;
+
 	if (argc != 3) {
 		printf("Usage: %s <IP> <port>\n", argv[0]);
 		exit(1);
@@ -34,11 +36,16 @@ int main(int argc, char* argv[]) {
 		ErrorHandling("connect() error");
 	}
 
-	strLen = rec(sock, message, sizeof(message) - 1, 0);
-	if (strLen == -1) {
-		ErrorHandling("read() error");
+	while (readLen = recv(sock, &message[idx++], 1, 0)) {
+		if (readLen == -1) {
+			ErrorHandling("read() error");
+		}
+
+		strLen += readLen;
 	}
-	printf("Meesage from server: %s \n", message);
+
+	printf("Message from server: %s \n", message);
+	printf("Function read call count: %d \n", strLen);
 
 	closesocket(sock);
 	WSACleanup();
