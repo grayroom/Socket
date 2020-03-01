@@ -24,9 +24,19 @@ int main(int argc, char *argv[]) {
         error_handling("socket() error");
     }
 
+    /*
+    // initialize sockaddr_in struct
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;                     // address family
+    serv_addr.sin_addr.s_addr = inet_addr(argv[1]);     // ip address
+    serv_addr.sin_port = htons(atoi(argv[2]));          // TCP port
+    */
+
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+    if(!inet_aton(argv[1], &serv_addr.sin_addr.s_addr)) {
+        error_handling("IP address conversion error");
+    }
     serv_addr.sin_port = htons(atoi(argv[2]));
 
     if(connect(sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) == -1) {
