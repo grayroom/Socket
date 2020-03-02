@@ -8,9 +8,11 @@ int main(int argc, char* argv[]) {
 	WSADATA wsaData;
 	SOCKET servSock, clntSock;
 	SOCKADDR_IN servAddr, clntAddr;
-
+	
+	int size;
 	int szClntAddr;
 	char message[] = "Hello World!";
+
 	if (argc != 2) {
 		printf("Usage: %s <port>\n", argv[0]);
 		exit(1);
@@ -25,6 +27,10 @@ int main(int argc, char* argv[]) {
 		ErrorHandling("socket() error");
 	}
 
+	/*
+	size = sizeof(servAddr);
+	WSAStringToAddress(strAddr, AF_INET, NULL, (SOCKADDR*)&servAddr, &size)
+	*/
 	memset(&servAddr, 0, sizeof(servAddr));
 	servAddr.sin_family = AF_INET;
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
