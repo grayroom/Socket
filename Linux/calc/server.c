@@ -52,15 +52,15 @@ int main(int argc, char* argv[]) {
             printf("Connected client %d \n", i + 1);
         }
 
-        while(read(clnt_sock, message, BUF_SIZE) == -1){}
+        while(read(clnt_sock, message, sizeof(int)) == 0){}
         opCnt = atoi(message);
         opArr = malloc(sizeof(int) * opCnt);
         for(j = 0; j < opCnt; j++) {
-            read(clnt_sock, message, sizeof(int));
+            while(read(clnt_sock, message, sizeof(int)) == 0){}
             opArr[j] = atoi(message);
         }
-
-        read(clnt_sock, message, sizeof(char));
+        
+        while(read(clnt_sock, message, sizeof(char)) == 0){}
         switch(message[0]) {
             case '+': {
                 res = opArr[0];
