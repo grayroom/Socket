@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <WinSock2.h>
 
+#define BUF_SIZE 1024
 void ErrorHandling(char* message);
 
 int main(int argc, char* argv[]) {
@@ -9,10 +11,10 @@ int main(int argc, char* argv[]) {
 	SOCKET servSock, clntSock;
 	SOCKADDR_IN servAddr, clntAddr;
 	
-	int size;
-	int szClntAddr;
-	char message[] = "Hello World!";
-
+	char message[BUF_SIZE];
+	int strLen, i;
+	int clntAddrSize;
+	
 	if (argc != 2) {
 		printf("Usage: %s <port>\n", argv[0]);
 		exit(1);
@@ -44,14 +46,23 @@ int main(int argc, char* argv[]) {
 		ErrorHandling("listen() error");
 	}
 
-	szClntAddr = sizeof(clntAddr);
-	clntSock = accept(servSock, (SOCKADDR*)&clntAddr, &szClntAddr);
-	if (clntSock == INVALID_SOCKET) {
-		ErrorHandling("accept() error");
+	clntAddrSize = sizeof(clntAddr);
+	
+	for(i = 0; i < 5; i++) {
+		clntSock = accept(servSock, (SOCKADDR*)&clntAddr, &clntAddrSize);
+		if(clntSock == -1) {
+			ErrorHandling("accept() error");
+		} else {
+			printf("Connected client %d \n", i + 1);
+		}
+
+		while((strLen = recv(clntSock, message, BUF_SIZE, 0)) != 0) {
+			send(clntSock, message, strLen, 0);
+		}
+
+		closesocket(clntSock);
 	}
 
-	send(clntSock, message, sizeof(message), 0);
-	closesocket(clntSock);
 	closesocket(servSock);
 	WSACleanup();
 	return 0;

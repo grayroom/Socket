@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <WinSock2.h>
 
+#define BUF_SIZE 1024
 void ErrorHandling(char* message);
 
 int main(int argc, char* argv[]) {
@@ -9,9 +11,8 @@ int main(int argc, char* argv[]) {
 	SOCKET sock;
 	SOCKADDR_IN servAddr;
 
-	char message[30];
+	char message[BUF_SIZE];
 	int strLen = 0;
-	int idx = 0, readLen = 0;
 
 	if (argc != 3) {
 		printf("Usage: %s <IP> <port>\n", argv[0]);
@@ -34,18 +35,23 @@ int main(int argc, char* argv[]) {
 
 	if (connect(sock, (SOCKADDR*)&servAddr, sizeof(servAddr)) == SOCKET_ERROR) {
 		ErrorHandling("connect() error");
+	} else {
+		puts("Connected.......");
 	}
 
-	while (readLen = recv(sock, &message[idx++], 1, 0)) {
-		if (readLen == -1) {
-			ErrorHandling("read() error");
+	while(1) {
+		fputs("input message(Q to quit): ", stdout);
+		fgets(message, BUF_SIZE, stdin);
+
+		if(!strcmp(message, "q\n") || !strcmp(message, "Q\n")) {
+			break;
 		}
 
-		strLen += readLen;
+		send(sock, message, strlen(message), 0);
+		strlen(recv(sock, message, BUF_SIZE-1, 0));
+		message[strLen] = 0;
+		printf("Message from server: %s", message);
 	}
-
-	printf("Message from server: %s \n", message);
-	printf("Function read call count: %d \n", strLen);
 
 	closesocket(sock);
 	WSACleanup();
