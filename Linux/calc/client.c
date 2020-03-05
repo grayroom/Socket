@@ -11,9 +11,10 @@ void error_handling(char* message);
 int main(int argc, char* argv[]) {
     int sock;
     char message[BUF_SIZE];
-    int str_len, recv_len, recv_cnt;
     struct sockaddr_in serv_addr;
-    int opCnt, i, j;
+
+    int str_len, recv_len, recv_cnt;
+    int opnd_cnt, i, res;
 
     if(argc != 3) {
         printf("Usage: %s <IP> <port>\n", argv[0]);
@@ -36,35 +37,22 @@ int main(int argc, char* argv[]) {
         puts("Connected.......");
     }
 
-    while(1) {
-        fputs("Operand count: ", stdout);
-        fgets(message, BUF_SIZE, stdin);
-        if(write(sock, message, strlen(message) == -1)) {
-            error_handling("write() error");
-        }
-        
-        opCnt = atoi(message);
-        for(i = 0; i < opCnt; i++) {
-            printf("Operand %d: ", i);
-            fgets(message, BUF_SIZE, stdin);
-            if(write(sock, message, strlen(message) == -1)) {
-                error_handling("write() error");
-            }
-        }
+    fputs("Operand count: ", stdout);
+    scanf("%d", &opnd_cnt);
+    message[0] = (char)opnd_cnt;
 
-        fputs("Operator: ", stdout);
-        fgets(message, BUF_SIZE, stdin);
-        if(write(sock, message, strlen(message) == -1)) {
-            error_handling("write() error");
-        }
-
-        if(read(sock, &message, BUF_SIZE - 1) == -1) {
-            error_handling("read() erorr");
-        } else {
-            message[BUF_SIZE] = 0;
-            printf("Operation result: %s", message);
-        }
+    for(i = 0; i < opnd_cnt; i++) {
+        printf("Operand %d: ", i + 1);
+        scanf("%d", (int*)&message[i * 4 + 1]);
     }
+
+    fgetc(stdin);
+    fputs("Operator: ", stdout);
+    scanf("%c", &message[opnd_cnt * 4 + 1]);
+    write(sock, message, opnd_cnt * 4 + 2);
+    read(sock, &res, sizeof(int));
+
+    printf("Operation result: %d \n", res);
 
     close(sock);
     return 0;

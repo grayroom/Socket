@@ -6,15 +6,14 @@
 #include <sys/socket.h>
 
 #define BUF_SIZE 1024
+int calculate(int op_cnt, int opnd[], char op);
 void error_handling(char* message);
 
 int main(int argc, char* argv[]) {
     int serv_sock, clnt_sock;
     char message[BUF_SIZE];
-    int str_len, opCnt, res;
+    int recv_len, recv_cnt, opnd_cnt, res;
     int i, j;
-
-    int* opArr;
 
     struct sockaddr_in serv_addr, clnt_addr;
     socklen_t clnt_addr_sz;
@@ -45,56 +44,51 @@ int main(int argc, char* argv[]) {
     clnt_addr_sz = sizeof(clnt_addr);
 
     for(i = 0; i < 5; i++) {
+        opnd_cnt = 0;
         clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_sz);
         if(clnt_sock == -1) {
             error_handling("accept() erorr");
-        } else {
-            printf("Connected client %d \n", i + 1);
+        }
+        printf("Connected client %d \n", i + 1);
+
+        read(clnt_sock, &opnd_cnt, 1);
+
+        recv_len = 0;
+        while((opnd_cnt * 4 + 1) > recv_len) {
+            recv_cnt = read(clnt_sock, &message[recv_len], BUF_SIZE - 1);
+            recv_len += recv_cnt;
         }
 
-        while(read(clnt_sock, message, sizeof(int)) == 0){}
-        opCnt = atoi(message);
-        opArr = malloc(sizeof(int) * opCnt);
-        for(j = 0; j < opCnt; j++) {
-            while(read(clnt_sock, message, sizeof(int)) == 0){}
-            opArr[j] = atoi(message);
-        }
-        
-        while(read(clnt_sock, message, sizeof(char)) == 0){}
-        switch(message[0]) {
-            case '+': {
-                res = opArr[0];
-                for(j = 1; j < opCnt; j++) {
-                    res += opArr[j];
-                }
-            } break;
-            case '-': {
-                res = opArr[0];
-                for(j = 1; j < opCnt; j++) {
-                    res -= opArr[j];
-                }
-            }
-            case '*': {
-                res = opArr[0];
-                for(j = 1; j < opCnt; j++) {
-                    res *= opArr[j];
-                }
-            }
-            case '/': {
-                res = opArr[0];
-                for(j = 1; j < opCnt; j++) {
-                    res /= opArr[j];
-                }
-            }
-        }
-
-        sprintf(message, "%d", res);
-        write(clnt_sock, message, BUF_SIZE);
+        res = calculate(opnd_cnt, (int*)message, message[recv_len - 1]);
+        write(clnt_sock, (char*)&res, sizeof(res));
         close(clnt_sock);
     }
 
     close(serv_sock);
     return 0;
+}
+
+int calculate(int op_cnt, int opnd[], char op) {
+    int res = opnd[0], i;
+    switch(op) {
+        case '+': {
+            for(i = 1; i < op_cnt; i++) {
+                res += opnd[i];
+            }
+        } break;
+        case '-': {
+            for(i = 1; i < op_cnt; i++) {
+                res -= opnd[i];
+            }
+        } break;
+        case '*': {
+            for(i = 1; i < op_cnt; i++) {
+                res *= opnd[i];
+            }
+        } break;
+    }
+
+    return res;
 }
 
 void error_handling(char *message) {
